@@ -23,7 +23,7 @@ services:
     networks:
         - openbao-net
     healthcheck:
-      test: sh -c "curl -f http://localhost:8200/v1/sys/health || exit 1"
+      test: sh -c "curl -f http://openbao-dev:8200/v1/sys/health || exit 1"
       interval: 3s
       retries: 20
       start_period: 5s
@@ -40,13 +40,13 @@ services:
       sh -c '
         i=0
         while [ $i -lt 30 ]; do
-          STATUS=$(curl -s http://openbao:8200/v1/sys/health | grep "initialized" || echo "")
+          STATUS=$(curl -s http://openbao-dev:8200/v1/sys/health | grep "initialized" || echo "")
           if echo $STATUS | grep true; then
             echo "OpenBao already initialized"; exit 0
           fi
           if echo $STATUS | grep false; then
             echo "Initializing OpenBao..."
-            curl -s -X POST http://openbao:8200/v1/sys/init -d "{\"secret_shares\":1,\"secret_threshold\":1}" > /openbao/file/.bao_token
+            curl -s -X POST http://openbao-dev:8200/v1/sys/init -d "{\"secret_shares\":1,\"secret_threshold\":1}" > /openbao/file/.bao_token
             echo "Token saved to /openbao/file/.bao_token"; exit 0
           fi
           i=$((i+1))
