@@ -15,5 +15,17 @@ services:
       - ./logs:/openbao/logs
     environment:
       - BAO_LOCAL_CONFIG={"listener":[{"tcp":{"address":"0.0.0.0:8200","tls_disable":true}}],"storage":{"file":{"path":"/openbao/file"}}}
-    command: server
+      - BAO_TOKEN_FILE=/openbao/file/.bao_token
+command: server
     restart: unless-stopped
+  fastapi:
+      image: my_fastapi_image
+      container_name: fastapi
+      depends_on:
+        - openbao
+      volumes:
+        - ./data:/openbao/file
+      environment:
+        - BAO_TOKEN_FILE=/openbao/file/.bao_token
+      networks:
+        - default
