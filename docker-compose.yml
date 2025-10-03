@@ -36,6 +36,11 @@ services:
     restart: unless-stopped
     networks:
         - default
+    healthcheck:
+      test: ["CMD", "curl", "-s", "http://localhost:8200/v1/sys/health"]
+      interval: 3s
+      retries: 10
+      start_period: 5s
   backend:
     build: ./backend
     container_name: backend
@@ -44,8 +49,10 @@ services:
       - OPENBAO_URL=http://openbao:8200
       - BAO_TOKEN_FILE=/openbao/file/.bao_token
     depends_on:
-      - postgres
-      - openbao
+      openbao:
+        condition: service_healthy
+      postgres:
+        condition: service_started
     volumes:
       - ./data:/openbao/file
     ports:
@@ -65,3 +72,6 @@ services:
 
 volumes:
   pgdata:
+
+networks:
+  default:
