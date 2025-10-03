@@ -1,4 +1,3 @@
-version: "3.8"
 services:
   openbao:
     image: quay.io/openbao/openbao:2.1.0
@@ -32,12 +31,14 @@ services:
     image: curlimages/curl:latest
     depends_on:
       - openbao
+    networks:
+      - default
     volumes:
       - ./data:/openbao/file
     entrypoint: >
-      sh -c '
+      bash -c '
         for i in $(seq 1 30); do
-          STATUS=$(curl -s http://openbao:8200/v1/sys/health | grep "initialized")
+          STATUS=$(curl -s http://openbao:8200/v1/sys/health | grep "initialized" || echo "")
           if echo $STATUS | grep true; then
             echo "OpenBao already initialized"; exit 0
           fi
