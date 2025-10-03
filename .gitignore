@@ -1,0 +1,7 @@
+__pycache__/
+.idea/
+openbao-config/
+openbao-data/
+openbao-logs/
+config/
+data/
