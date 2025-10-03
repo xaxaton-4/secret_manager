@@ -1,0 +1,34 @@
+version: "3.8"
+services:
+  openbao:
+    image: quay.io/openbao/openbao:2.1.0
+    container_name: openbao
+    cap_add:
+      - IPC_LOCK
+    ports:
+      - "8200:8200"
+      - "8201:8201"
+    volumes:
+      - ./config:/openbao/config
+      - ./data:/openbao/file
+      - ./logs:/openbao/logs
+    environment:
+      - OPENBAO_MODE=dev
+      - BAO_LOCAL_CONFIG={
+        "listener":[{"tcp":{"address":"0.0.0.0:8200","tls_disable":true}}],
+        "storage":{"file":{"path":"/openbao/file"}}
+        }
+      - BAO_TOKEN_FILE=/openbao/file/.bao_token
+    command: server
+    restart: unless-stopped
+    networks:
+        - default
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8200/v1/sys/health || exit 1"]
+      interval: 3s
+      retries: 20
+      start_period: 5s
+
+volumes:
+  data:
+  logs:

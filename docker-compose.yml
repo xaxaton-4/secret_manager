@@ -37,9 +37,9 @@ services:
     networks:
         - default
     healthcheck:
-      test: ["CMD", "curl", "-s", "http://localhost:8200/v1/sys/health"]
+      test: ["CMD", "curl", "-f", "http://localhost:8200/v1/sys/health || exit 1"]
       interval: 3s
-      retries: 10
+      retries: 20
       start_period: 5s
   backend:
     build: ./backend
