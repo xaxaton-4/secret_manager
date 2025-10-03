@@ -1,6 +1,18 @@
 version: "3.8"
 
 services:
+  postgres:
+      image: postgres:15
+      environment:
+        POSTGRES_USER: demo
+        POSTGRES_PASSWORD: demo
+        POSTGRES_DB: secretmanager
+      ports:
+        - "5432:5432"
+      volumes:
+        - pgdata:/var/lib/postgresql/data
+      networks:
+        - default
   openbao:
     image: quay.io/openbao/openbao:2.1.0
     container_name: openbao
@@ -14,18 +26,32 @@ services:
       - ./data:/openbao/file
       - ./logs:/openbao/logs
     environment:
-      - BAO_LOCAL_CONFIG={"listener":[{"tcp":{"address":"0.0.0.0:8200","tls_disable":true}}],"storage":{"file":{"path":"/openbao/file"}}}
+      - OPENBAO_MODE=dev
+      - BAO_LOCAL_CONFIG={
+        "listener":[{"tcp":{"address":"0.0.0.0:8200","tls_disable":true}}],
+        "storage":{"file":{"path":"/openbao/file"}}
+        }
       - BAO_TOKEN_FILE=/openbao/file/.bao_token
-command: server
+    command: server
     restart: unless-stopped
-  fastapi:
-      image: my_fastapi_image
-      container_name: fastapi
-      depends_on:
-        - openbao
-      volumes:
-        - ./data:/openbao/file
-      environment:
-        - BAO_TOKEN_FILE=/openbao/file/.bao_token
-      networks:
+    networks:
         - default
+  backend:
+    build: ./backend
+    container_name: backend
+    environment:
+      - DATABASE_URL=postgres://demo:demo@postgres:5432/secretmanager
+      - OPENBAO_URL=http://openbao:8200
+      - BAO_TOKEN_FILE=/openbao/file/.bao_token
+    depends_on:
+      - postgres
+      - openbao
+    volumes:
+      - ./data:/openbao/file
+    ports:
+      - "5000:5000"
+    networks:
+        - default
+
+  volumes:
+    pgdata:
