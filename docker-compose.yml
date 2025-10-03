@@ -53,5 +53,5 @@ services:
     networks:
         - default
 
-  volumes:
-    pgdata:
+volumes:
+  pgdata:
