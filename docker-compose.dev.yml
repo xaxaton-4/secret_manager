@@ -5,7 +5,7 @@ services:
     cap_add:
       - IPC_LOCK
     ports:
-      - "8200:8200"
+      - "8201:8200"
       - "8201:8201"
     volumes:
       - ./config:/openbao/config
@@ -14,15 +14,10 @@ services:
     environment:
       - BAO_LOCAL_CONFIG={"listener":[{"tcp":{"address":"0.0.0.0:8200","tls_disable":true}}],"storage":{"file":{"path":"/openbao/file"}}}
       - BAO_TOKEN_FILE=/openbao/file/.bao_token
-    command: "server -dev"
+    command: "server -dev -dev-root-token-id=root"
     restart: unless-stopped
     networks:
         - openbao-net
-    healthcheck:
-      test: sh -c "curl -f http://openbao-dev:8200/v1/sys/health || exit 1"
-      interval: 3s
-      retries: 20
-      start_period: 5s
 networks:
   openbao-net:
 
