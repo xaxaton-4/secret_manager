@@ -3,14 +3,13 @@ import logging
 import uvicorn
 
 from config import settings
-import views
 
 
 logger = logging.getLogger('secret_manager')
 
 
 if __name__ == '__main__':
-    logger.info("Run secret manager...")
+    logger.info('Run secret manager...')
 
     config = {
         'host': settings.HOST,

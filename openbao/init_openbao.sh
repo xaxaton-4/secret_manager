@@ -38,9 +38,6 @@ else
   root_token=$(jq -r '.root_token' $BAO_FILE)
 fi
 
-curl -s --header "X-Vault-Token: $root_token" \
-  $OPENBAO_URL/v1/sys/mounts
-
 # Настройка ACL
 admin_policy=$(jq -Rs . < "$POLICIES_DIR/admin-policy.hcl")
 user_policy=$(jq -Rs . < "$POLICIES_DIR/user-policy.hcl")
@@ -68,9 +65,3 @@ USER_TOKEN=$(curl -s --header "X-Vault-Token: $root_token" \
   --data '{"policies":["user"], "ttl":"24h"}' \
   $OPENBAO_URL/v1/auth/token/create | jq -r '.auth.client_token')
 echo "USER_TOKEN=$USER_TOKEN" >> /openbao/file/tokens.env
-
-# Добавление тестовых секретов
-curl -s --header "X-Vault-Token: $ADMIN_TOKEN" \
-  --request POST \
-  --data '{"data":{"DB_USER":"demo","DB_PASS":"demo"}}' \
-  $OPENBAO_URL/v1/secret/data/app/db

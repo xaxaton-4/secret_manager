@@ -7,3 +7,6 @@ openbao-logs/
 data/
 *.log
 .venv/
+venv/
+.env
+redisdata/
