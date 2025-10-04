@@ -1,36 +1,38 @@
 #!/bin/sh
 set -e
 
-# Получаем переменные из окружения
+# -------------------------------
+# Переменные окружения
+# -------------------------------
 OPENBAO_URL=${OPENBAO_URL:-http://openbao:8200}
 BAO_FILE=${BAO_FILE:-/openbao/file/.bao_token}
-
+TOKENS_FILE="/openbao/file/tokens.env"
 POLICIES_DIR="/openbao/policies"
 
-# Проверяем, что OpenBao доступен
+# -------------------------------
+# Ждем запуска OpenBao
+# -------------------------------
 echo "Waiting for OpenBao to start..."
 until curl -s $OPENBAO_URL/v1/sys/health >/dev/null 2>&1; do
   echo "OpenBao not ready yet..."
   sleep 1
 done
 
-echo "OpenBao is up!"
-echo "Waiting 2 sec to ensure OpenBao fully ready..."
+echo "OpenBao is up! Waiting 2 sec to ensure full readiness..."
 sleep 2
 
-
-# Проверяем, что OpenBao не инициализирован
-status=$(curl -s $OPENBAO_URL/v1/sys/health | jq -r .initialized)
-
-# Инициализируем OpenBao
-if [ "$status" = "false" ]; then
+# -------------------------------
+# Инициализация OpenBao
+# -------------------------------
+if [ ! -f "$BAO_FILE" ]; then
   echo "Initializing OpenBao..."
   keys=$(curl -s --request POST --data '{"secret_shares":1,"secret_threshold":1}' $OPENBAO_URL/v1/sys/init)
-  echo "Keys: $keys"
   unseal_key=$(echo $keys | jq -r '.keys[0]')
   root_token=$(echo $keys | jq -r '.root_token')
+
   echo "Unsealing OpenBao..."
   curl -s --request PUT --data "{\"key\":\"$unseal_key\"}" $OPENBAO_URL/v1/sys/unseal
+
   echo "$keys" > $BAO_FILE
   echo "OpenBao initialized and unsealed."
 else
@@ -38,30 +40,64 @@ else
   root_token=$(jq -r '.root_token' $BAO_FILE)
 fi
 
-# Настройка ACL
-admin_policy=$(jq -Rs . < "$POLICIES_DIR/admin-policy.hcl")
-user_policy=$(jq -Rs . < "$POLICIES_DIR/user-policy.hcl")
+# -------------------------------
+# Авто-unseal при повторных запусках
+# -------------------------------
+sealed=$(curl -s $OPENBAO_URL/v1/sys/health | jq -r .sealed)
+if [ "$sealed" = "true" ]; then
+  echo "OpenBao is sealed. Unsealing..."
+  unseal_key=$(jq -r '.keys[0]' $BAO_FILE)
+  curl -s --request PUT --data "{\"key\":\"$unseal_key\"}" $OPENBAO_URL/v1/sys/unseal
+  echo "OpenBao unsealed."
+else
+  echo "OpenBao already unsealed."
+fi
 
-curl -s --header "X-Vault-Token: $root_token" \
-  --request PUT \
-  --data "{\"policy\": $admin_policy}" \
-  $OPENBAO_URL/v1/sys/policies/acl/admin
+# -------------------------------
+# Настройка политик
+# -------------------------------
+apply_policy() {
+  local name=$1
+  local file=$2
+  exists=$(curl -s --header "X-Vault-Token: $root_token" \
+           $OPENBAO_URL/v1/sys/policies/acl/$name | jq -r .name 2>/dev/null || echo "")
+  if [ "$exists" != "$name" ]; then
+    policy_json=$(jq -Rs . < "$file")
+    curl -s --header "X-Vault-Token: $root_token" \
+         --request PUT \
+         --data "{\"policy\": $policy_json}" \
+         $OPENBAO_URL/v1/sys/policies/acl/$name
+    echo "Policy $name applied."
+  else
+    echo "Policy $name already exists."
+  fi
+}
 
-curl -s --header "X-Vault-Token: $root_token" \
-  --request PUT \
-  --data "{\"policy\": $user_policy}" \
-  $OPENBAO_URL/v1/sys/policies/acl/user
+apply_policy "admin" "$POLICIES_DIR/admin-policy.hcl"
+apply_policy "user" "$POLICIES_DIR/user-policy.hcl"
 
-# Создаем токен администратора
-ADMIN_TOKEN=$(curl -s --header "X-Vault-Token: $root_token" \
-  --request POST \
-  --data '{"policies":["admin"], "ttl":"24h"}' \
-  $OPENBAO_URL/v1/auth/token/create | jq -r '.auth.client_token')
-echo "ADMIN_TOKEN=$ADMIN_TOKEN" >> /openbao/file/tokens.env
+# -------------------------------
+# Создание токенов
+# -------------------------------
+if [ ! -f "$TOKENS_FILE" ]; then
+  echo "Creating tokens..."
 
-# Создаем токен пользователя
-USER_TOKEN=$(curl -s --header "X-Vault-Token: $root_token" \
-  --request POST \
-  --data '{"policies":["user"], "ttl":"24h"}' \
-  $OPENBAO_URL/v1/auth/token/create | jq -r '.auth.client_token')
-echo "USER_TOKEN=$USER_TOKEN" >> /openbao/file/tokens.env
+  ADMIN_TOKEN=$(curl -s --header "X-Vault-Token: $root_token" \
+    --request POST \
+    --data '{"policies":["admin"], "ttl":"24h"}' \
+    $OPENBAO_URL/v1/auth/token/create | jq -r '.auth.client_token')
+
+  USER_TOKEN=$(curl -s --header "X-Vault-Token: $root_token" \
+    --request POST \
+    --data '{"policies":["user"], "ttl":"24h"}' \
+    $OPENBAO_URL/v1/auth/token/create | jq -r '.auth.client_token')
+
+  echo "ADMIN_TOKEN=$ADMIN_TOKEN" >> $TOKENS_FILE
+  echo "USER_TOKEN=$USER_TOKEN" >> $TOKENS_FILE
+
+  echo "Tokens created and saved to $TOKENS_FILE."
+else
+  echo "Tokens file already exists. Skipping token creation."
+fi
+
+echo "OpenBao setup completed."
