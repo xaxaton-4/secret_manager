@@ -5,3 +5,5 @@ openbao-data/
 openbao-logs/
 config/
 data/
+*.log
+.venv/

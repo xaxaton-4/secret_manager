@@ -53,6 +53,7 @@ services:
       - DATABASE_URL=postgres://demo:demo@postgres:5432/secretmanager
       - OPENBAO_URL=http://openbao:8200
       - BAO_TOKEN_FILE=/openbao/file/.bao_token
+      - PORT=5000
     volumes:
       - ./openbao/data:/openbao/file
     ports:
