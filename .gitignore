@@ -10,3 +10,4 @@ data/
 venv/
 .env
 redisdata/
+test_doc.html

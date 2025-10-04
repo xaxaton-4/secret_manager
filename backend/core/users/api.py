@@ -79,38 +79,6 @@ class UserDetail(APIView):
         return Response(UserDetailSerializer(user).data)
 
 
-"""
-@api {POST} /api/register/ Register
-@apiGroup User
-@apiBody {String} email Электронная почта пользователя.
-@apiBody {String} password Пароль.
-
-@apiSuccess (Ответ) {Number} id Идентификатор пользователя.
-@apiSuccess (Ответ) {String} email Электронная почта пользователя.
-
-@apiSuccessExample Аккаунт успешно зарегистрирован:
-    HTTP/1.1 200 OK
-    {
-        "id": 1,
-        "email": "red_hot_osu_pepper@mail.ru",
-    }
-
-@apiErrorExample {json} Пропущено поле:
-    HTTP/1.1 400 Bad Request
-    {
-        "password": [
-            "Обязательное поле."
-        ]
-    }
-
-@apiErrorExample {json} Некорректно указана почта:
-    HTTP/1.1 400 Bad Request
-    {
-        "email": [
-            "Введите правильный адрес электронной почты."
-        ]
-    }
-"""
 class Registration(APIView):
     serializer_class = RegistrationSerializer
 

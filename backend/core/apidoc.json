@@ -1,0 +1,9 @@
+{
+    "name": "Core API | 4/Red HOT OSU Peppers",
+    "version": "0.1.0",
+    "description": "Core service in our backend solution",
+    "apidoc": {
+      "title": "Core API",
+      "url" : "http://127.0.0.1:5000"
+    }
+}

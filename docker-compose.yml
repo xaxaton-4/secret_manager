@@ -79,7 +79,7 @@ services:
       openbao:
         condition: service_started
       openbao-init:
-        condition: service_completed_successfully
+        condition: service_started
       postgres:
         condition: service_healthy
     networks:

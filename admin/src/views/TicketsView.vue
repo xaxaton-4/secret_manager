@@ -33,7 +33,7 @@ const onAccept = (event: PointerEvent, ticketId: number) => {
   });
 };
 
-const onReject = (event: PointerEvent) => {
+const onReject = (event: PointerEvent, ticketId: number) => {
   confirm.require({
     target: event.currentTarget as HTMLElement,
     message: 'Вы действительно хотите отклонить заявку?',
@@ -47,7 +47,7 @@ const onReject = (event: PointerEvent) => {
       label: 'Да',
     },
     accept: () => {
-      // TODO remove ticket
+      ticketsStore.deleteTicket(ticketId);
     },
   });
 };
@@ -88,7 +88,7 @@ onMounted(() => {
             label="Отклонить"
             icon="pi pi-times"
             severity="danger"
-            @click="onReject"
+            @click="onReject($event, ticket.id)"
           />
         </template>
       </Card>
