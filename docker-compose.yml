@@ -1,6 +1,18 @@
 version: "3.8"
 
 services:
+  postgres:
+      image: postgres:15
+      environment:
+        POSTGRES_USER: demo
+        POSTGRES_PASSWORD: demo
+        POSTGRES_DB: secretmanager
+      ports:
+        - "5432:5432"
+      volumes:
+        - pgdata:/var/lib/postgresql/data
+      networks:
+        - default
   openbao:
     image: quay.io/openbao/openbao:2.1.0
     container_name: openbao
@@ -17,3 +29,34 @@ services:
       - BAO_LOCAL_CONFIG={"listener":[{"tcp":{"address":"0.0.0.0:8200","tls_disable":true}}],"storage":{"file":{"path":"/openbao/file"}}}
     command: server
     restart: unless-stopped
+    networks:
+        - default
+  backend:
+    build: ./backend
+    container_name: backend
+    environment:
+      - DATABASE_URL=postgres://demo:demo@postgres:5432/secretmanager
+      - OPENBAO_URL=http://openbao:8200
+      - BAO_TOKEN_FILE=/openbao/file/.bao_token
+    volumes:
+      - ./data:/openbao/file
+    ports:
+      - "5000:5000"
+    networks:
+      - default
+  keycloak:
+    image: quay.io/keycloak/keycloak:21.1
+    environment:
+      - KEYCLOAK_ADMIN=admin
+      - KEYCLOAK_ADMIN_PASSWORD=admin
+    command: start-dev
+    ports:
+      - "8081:8080"
+    networks:
+      - default
+
+volumes:
+  pgdata:
+
+networks:
+  default:
