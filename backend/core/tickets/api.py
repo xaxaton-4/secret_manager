@@ -43,6 +43,47 @@ class CreateTicket(BaseApiView):
         email.send()
 
 
+class DeleteTicket(BaseApiView):
+    @only_admin
+    def post(self, request):
+        ticket_id = request.data.get('ticket_id')
+        reason = request.data.get('reason', 'Не указана.')
+        force = request.data.get('force', False)
+        ticket = Ticket.objects.select_related('user').filter(pk=ticket_id)
+        if not ticket.exists():
+            return Response('There are no tickets with this id', status=status_code.HTTP_404_NOT_FOUND)
+
+        t = ticket.first()
+        email = t.user.email
+        with_email = False
+
+        if email:
+            message = f'Ваш запрос на ключ "{t.resource}" отклонен. Причина: {reason}'
+            try:
+                self.send_email(email, message)
+                with_email = True
+            except Exception:
+                with_email = False
+
+        # send notif
+        notif_sended = True
+        if notif_sended or with_email or force:
+            t.delete()
+            return Response(status=200)
+        return Response(
+            'Could not send feedback, if you still want to delete this ticket use "force" parameter',
+            status=status_code.HTTP_400_BAD_REQUEST
+        )
+
+    def send_email(self, email: str, message: str):
+        mail_subject = 'Заявка на ключ отклонена.'
+        context = {'message': message}
+        prepared_message = render_to_string('ticket_not_approved.html', context)
+        email = EmailMessage(mail_subject, prepared_message, to=(email,))
+        email.content_subtype = 'html'
+        email.send()
+
+
 class ModifyTicket(BaseApiView):
     @only_admin
     def post(self, request):
