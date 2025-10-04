@@ -12,6 +12,9 @@ import { router } from './core/router';
 
 const app = createApp(App);
 
+app.use(ToastService);
+app.use(ConfirmationService);
+
 app.use(router);
 
 app.use(createPinia());
@@ -25,9 +28,8 @@ app.use(PrimeVue, {
   },
 });
 
-app.use(ToastService);
-app.use(ConfirmationService);
-
 app.directive('tooltip', Tooltip);
 
 app.mount('#app');
+
+export const toast = app.config.globalProperties.$toast;

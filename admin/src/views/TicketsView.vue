@@ -1,9 +1,12 @@
 <script setup lang="ts">
+import { onMounted } from 'vue';
 import Button from 'primevue/button';
 import Card from 'primevue/card';
 import { useConfirm } from 'primevue/useconfirm';
 import { useToast } from 'primevue/usetoast';
+import { useTicketsStore } from '@/store/tickets';
 
+const ticketsStore = useTicketsStore();
 const confirm = useConfirm();
 const toast = useToast();
 
@@ -70,6 +73,10 @@ const onReject = (event: PointerEvent) => {
     },
   });
 };
+
+onMounted(() => {
+  ticketsStore.getTickets();
+});
 </script>
 
 <template>

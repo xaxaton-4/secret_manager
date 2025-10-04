@@ -2,10 +2,12 @@
 import { reactive, ref } from 'vue';
 import Form, { FormSubmitEvent } from '@primevue/forms/form';
 import { zodResolver } from '@primevue/forms/resolvers/zod';
-import { Button, Card, InputText, Message, useToast } from 'primevue';
+import { Button, Card, InputText, Message } from 'primevue';
 import { z } from 'zod';
+import { useSecretsStore } from '@/store/secrets';
+import { Secret } from '@/types/secrets';
 
-const toast = useToast();
+const secretsStore = useSecretsStore();
 
 const initialValues = reactive({
   resource: '',
@@ -21,13 +23,9 @@ const resolver = ref(
   ),
 );
 
-const onFormSubmit = (event: FormSubmitEvent) => {
+const onFormSubmit = (event: FormSubmitEvent<Secret>) => {
   if (event.valid) {
-    toast.add({
-      severity: 'success',
-      summary: 'Form is submitted.',
-      life: 3000,
-    });
+    secretsStore.createSecret(event.values);
   }
 };
 </script>
