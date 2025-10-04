@@ -29,12 +29,12 @@ const barChartData = computed(() => {
 const pieChartData = computed(() => {
   const data = ticketsStore.tickets.reduce<Record<string, number>>(
     (acc, ticket) => {
-      acc[ticket.is_approved ? 'Принятые' : 'Отклоненные']++;
+      acc[ticket.is_approved ? 'Принятые' : 'Не принятые']++;
       return acc;
     },
     {
       Принятые: 0,
-      Отклоненные: 0,
+      'Не принятые': 0,
     },
   );
 
@@ -42,12 +42,33 @@ const pieChartData = computed(() => {
     labels: Object.keys(data),
     datasets: [
       {
-        label: 'Принятые/отклоненные заявки',
+        label: 'Обработанные/не принятые заявки',
         data: Object.values(data),
       },
     ],
   };
 });
+
+const usersBarChartData = computed(() => {
+  const data = ticketsStore.tickets.reduce<Record<string, number>>((acc, ticket) => {
+    acc[ticket.user.email] = acc[ticket.user.email] ? acc[ticket.user.email] + 1 : 1;
+    return acc;
+  }, {});
+
+  return {
+    labels: Object.keys(data),
+    datasets: [
+      {
+        label: 'Заявки пользователей',
+        data: Object.values(data),
+      },
+    ],
+  };
+});
+
+const usersBarChartOptions = {
+  indexAxis: 'y',
+};
 
 onMounted(() => {
   ticketsStore.getTickets();
@@ -68,12 +89,24 @@ onMounted(() => {
     </Card>
 
     <Card>
-      <template #title>Принятые/отклоненные заявки</template>
+      <template #title>Принятые/не принятые заявки</template>
 
       <template #content>
         <Chart
           type="pie"
           :data="pieChartData"
+        />
+      </template>
+    </Card>
+
+    <Card>
+      <template #title>Заявки пользователей</template>
+
+      <template #content>
+        <Chart
+          type="bar"
+          :data="usersBarChartData"
+          :options="usersBarChartOptions"
         />
       </template>
     </Card>

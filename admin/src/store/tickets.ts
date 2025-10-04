@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia';
-import { approveTicket, getTickets } from '@/api/tickets';
+import { approveTicket, deleteTicket, getTickets } from '@/api/tickets';
 import { toast } from '@/main';
 import { TicketsState } from '@/types/tickets';
 
@@ -28,7 +28,15 @@ export const useTicketsStore = defineStore('tickets', {
       this.isLoading = true;
       try {
         await approveTicket(id);
-        this.tickets = this.tickets.filter((ticket) => ticket.id !== id);
+        this.tickets = this.tickets.map((ticket) => {
+          if (ticket.id === id) {
+            return {
+              ...ticket,
+              is_approved: true,
+            };
+          }
+          return ticket;
+        });
         toast.add({
           severity: 'success',
           summary: 'Заявка успешно принята',
@@ -39,6 +47,27 @@ export const useTicketsStore = defineStore('tickets', {
           severity: 'error',
           summary: 'Ошибка',
           detail: 'Не удалось принять заявку',
+          life: 3000,
+        });
+      } finally {
+        this.isLoading = false;
+      }
+    },
+    async deleteTicket(id: number) {
+      this.isLoading = true;
+      try {
+        await deleteTicket(id);
+        this.tickets = this.tickets.filter((ticket) => ticket.id !== id);
+        toast.add({
+          severity: 'success',
+          summary: 'Заявка успешно отклонена',
+          life: 3000,
+        });
+      } catch (error) {
+        toast.add({
+          severity: 'error',
+          summary: 'Ошибка',
+          detail: 'Не удалось отклонить заявку',
           life: 3000,
         });
       } finally {

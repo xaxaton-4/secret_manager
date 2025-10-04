@@ -12,3 +12,10 @@ export const approveTicket = async (id: number) => {
     is_approved: true,
   });
 };
+
+export const deleteTicket = async (id: number, reason?: string) => {
+  await api.post('/api/tickets/delete/', {
+    ticket_id: id,
+    reason,
+  });
+};
