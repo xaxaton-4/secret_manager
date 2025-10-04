@@ -1,33 +1,10 @@
-cp template.env .env
-
-
-docker compose up -d --build
-
-# Скопируйте шаблон и создайте `.env` файл:
-
-```bash
+Установить переменные окружения
+```
 cp template.env .env
 ```
+P.S: Значения почты можно запросить у нас, однако если вы не намерены это проверять, то оставьте значение "узнать_у_нас", в таком случае будет использоваться моковый почтовый-движок, сохраняющий письма в файлах на сервере.
 
-# В файле .env укажите переменные окружения по примеру:
-
-```env
-DEBUG=true
-DATABASE_NAME=secretmanager
-DATABASE_USER=demo
-DATABASE_PASSWORD=demo
-DATABASE_HOST=postgres
-DATABASE_PORT=5432
-OPENBAO_URL=http://openbao:8200
-BAO_TOKEN_FILE=/path/to/token/file
-EMAIL_SENDER=example@example.com
-EMAIL_PASSWORD=secret
+Запустить сервер. Контейнеры: openbao ; сервис уведомлений (ws) ; сервис-ядро (http) ; psql ; redis ; админка ; keycloak
 ```
-
-# почту и пароль узнать у нас
-
-## Запуск проекта
-
-```bash
-docker compose up -d --build
+docker compose up --build
 ```

@@ -7,4 +7,5 @@ from tickets import api
 urlpatterns = [
     path('tickets/list/', api.TicketsList.as_view()),
     path('tickets/create/', api.CreateTicket.as_view()),
+    path('tickets/modify/', api.ModifyTicket.as_view()),
 ]
