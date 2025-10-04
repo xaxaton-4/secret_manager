@@ -42,7 +42,7 @@ const pieChartData = computed(() => {
     labels: Object.keys(data),
     datasets: [
       {
-        label: 'Обработанные/не принятые заявки',
+        label: 'Принятые/не принятые заявки',
         data: Object.values(data),
       },
     ],
@@ -50,8 +50,13 @@ const pieChartData = computed(() => {
 });
 
 const usersBarChartData = computed(() => {
-  const data = ticketsStore.tickets.reduce<Record<string, number>>((acc, ticket) => {
-    acc[ticket.user.email] = acc[ticket.user.email] ? acc[ticket.user.email] + 1 : 1;
+  const data = ticketsStore.tickets.reduce<Record<string, [number, number]>>((acc, ticket) => {
+    if (acc[ticket.user.email]) {
+      acc[ticket.user.email][ticket.is_approved ? 0 : 1]++;
+    } else {
+      acc[ticket.user.email] = [0, 0];
+      acc[ticket.user.email][ticket.is_approved ? 0 : 1]++;
+    }
     return acc;
   }, {});
 
@@ -59,8 +64,12 @@ const usersBarChartData = computed(() => {
     labels: Object.keys(data),
     datasets: [
       {
-        label: 'Заявки пользователей',
-        data: Object.values(data),
+        label: 'Принятые',
+        data: Object.values(data).map((item) => item[0]),
+      },
+      {
+        label: 'Не принятые',
+        data: Object.values(data).map((item) => item[1]),
       },
     ],
   };
