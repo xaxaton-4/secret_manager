@@ -26,21 +26,11 @@ services:
       - ./data:/openbao/file
       - ./logs:/openbao/logs
     environment:
-      - OPENBAO_MODE=dev
-      - BAO_LOCAL_CONFIG={
-        "listener":[{"tcp":{"address":"0.0.0.0:8200","tls_disable":true}}],
-        "storage":{"file":{"path":"/openbao/file"}}
-        }
-      - BAO_TOKEN_FILE=/openbao/file/.bao_token
+      - BAO_LOCAL_CONFIG={"listener":[{"tcp":{"address":"0.0.0.0:8200","tls_disable":true}}],"storage":{"file":{"path":"/openbao/file"}}}
     command: server
     restart: unless-stopped
     networks:
         - default
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8200/v1/sys/health || exit 1"]
-      interval: 3s
-      retries: 20
-      start_period: 5s
   backend:
     build: ./backend
     container_name: backend
@@ -48,11 +38,6 @@ services:
       - DATABASE_URL=postgres://demo:demo@postgres:5432/secretmanager
       - OPENBAO_URL=http://openbao:8200
       - BAO_TOKEN_FILE=/openbao/file/.bao_token
-    depends_on:
-      openbao:
-        condition: service_healthy
-      postgres:
-        condition: service_started
     volumes:
       - ./data:/openbao/file
     ports:
