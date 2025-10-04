@@ -3,7 +3,7 @@ __pycache__/
 openbao-config/
 openbao-data/
 openbao-logs/
-config/
+/config/
 data/
 *.log
 .venv/
