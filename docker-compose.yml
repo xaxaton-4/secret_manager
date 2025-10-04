@@ -49,9 +49,11 @@ services:
       - BAO_TOKEN_FILE=${BAO_TOKEN_FILE}
     networks:
       - default
-  backend:
-    build: ./backend
-    container_name: backend
+  core_service:
+    command: >
+      bash -c "python3 manage.py migrate && python manage.py setup_test_data && python3 manage.py runserver 0.0.0.0:5000"
+    build: ./backend/core
+    container_name: core_service
     environment:
       - DEBUG=${DEBUG}
       - DATABASE_URL=${DATABASE_URL}
@@ -72,6 +74,20 @@ services:
     depends_on:
       - openbao
       - openbao-init
+      - postgres
+    networks:
+      - default
+  notify_service:
+    command: >
+      bash -c "python3 run.py"
+    build: ./backend/notify_service
+    container_name: notify_service
+    depends_on:
+      - core_service
+    environment:
+      - PORT=5001
+    ports:
+      - "5001:5001"
     networks:
       - default
   keycloak:
@@ -84,6 +100,13 @@ services:
       - "8081:8080"
     networks:
       - default
+  redis:
+    image: redis:latest
+    container_name: redis
+    ports:
+      - "6380:6379"
+    volumes:
+      - ./redisdata:/data
 
 volumes:
   pgdata:
