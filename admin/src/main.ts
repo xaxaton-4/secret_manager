@@ -2,7 +2,6 @@ import { createApp } from 'vue';
 import Aura from '@primeuix/themes/aura';
 import dayjs from 'dayjs';
 import 'dayjs/locale/ru';
-import { createPinia } from 'pinia';
 import 'primeicons/primeicons.css';
 import PrimeVue from 'primevue/config';
 import ConfirmationService from 'primevue/confirmationservice';
@@ -11,6 +10,7 @@ import Tooltip from 'primevue/tooltip';
 import App from './App.vue';
 import './assets/style.scss';
 import { router } from './core/router';
+import { store } from './core/store';
 
 dayjs.locale('ru');
 
@@ -21,7 +21,7 @@ app.use(ConfirmationService);
 
 app.use(router);
 
-app.use(createPinia());
+app.use(store);
 
 app.use(PrimeVue, {
   theme: {

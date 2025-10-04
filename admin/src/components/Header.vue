@@ -1,4 +1,8 @@
 <script setup lang="ts">
+import { useAuthStore } from '@/store/auth';
+
+const authStore = useAuthStore();
+
 const links = [
   {
     to: '/',
@@ -30,6 +34,7 @@ const links = [
       :class="$style.logout"
       class="pi pi-sign-out"
       v-tooltip="'Выйти'"
+      @click="authStore.logout"
     />
   </header>
 </template>
