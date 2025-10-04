@@ -84,6 +84,8 @@ services:
       - "80:80"
     depends_on:
       - core_service
+    environment:
+      - VITE_API_URL=${VITE_API_URL}
     networks:
       - default
   keycloak:
