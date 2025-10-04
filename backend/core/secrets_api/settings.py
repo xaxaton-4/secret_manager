@@ -18,6 +18,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'docs.apps.DocsConfig',
     'tickets.apps.TicketsConfig',
     'users.apps.UsersConfig'
 ]
@@ -95,7 +96,8 @@ USE_I18N = True
 USE_TZ = True
 
 
-STATIC_URL = 'static/'
+STATIC_URL = '/assets/'
+STATICFILES_DIRS = [BASE_DIR / 'assets']
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
