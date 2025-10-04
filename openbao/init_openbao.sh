@@ -8,6 +8,7 @@ OPENBAO_URL=${OPENBAO_URL:-http://openbao:8200}
 BAO_FILE=${BAO_FILE:-/openbao/file/.bao_token}
 TOKENS_FILE="/openbao/file/tokens.env"
 POLICIES_DIR="/openbao/policies"
+KV_MOUNT_PATH="secret"
 
 # -------------------------------
 # Ждем запуска OpenBao
@@ -51,6 +52,20 @@ if [ "$sealed" = "true" ]; then
   echo "OpenBao unsealed."
 else
   echo "OpenBao already unsealed."
+fi
+
+# -------------------------------
+# Монтирование KV v2 движка
+# -------------------------------
+exists=$(curl -s -H "X-Vault-Token: $root_token" $OPENBAO_URL/v1/sys/mounts | jq -r "has(\"$KV_MOUNT_PATH/\")")
+if [ "$exists" != "true" ]; then
+  curl -s -X POST -H "X-Vault-Token: $root_token" \
+       -H "Content-Type: application/json" \
+       --data '{"type": "kv", "options":{"version":"2"}}' \
+       $OPENBAO_URL/v1/sys/mounts/$KV_MOUNT_PATH
+  echo "KV v2 mounted at $KV_MOUNT_PATH/"
+else
+  echo "KV v2 already mounted at $KV_MOUNT_PATH/"
 fi
 
 # -------------------------------
