@@ -23,9 +23,9 @@ const resolver = ref(
   ),
 );
 
-const onFormSubmit = (event: FormSubmitEvent<Secret>) => {
+const onFormSubmit = (event: FormSubmitEvent) => {
   if (event.valid) {
-    secretsStore.createSecret(event.values);
+    secretsStore.createSecret(event.values as Secret);
   }
 };
 </script>
