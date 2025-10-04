@@ -6,7 +6,7 @@ from rest_framework.response import Response
 
 from secrets_api.base_api import BaseApiView
 from tickets.models import Ticket
-from tickets.serializers import TicketSerializer
+from tickets.serializers import TicketSerializer, TicketCreateSerializer
 from users.decorators import with_authorization, only_admin
 
 
@@ -29,7 +29,7 @@ class CreateTicket(BaseApiView):
 
         data = request.data
         data.update(user=request.user.pk)
-        serializer = TicketSerializer(data=data)
+        serializer = TicketCreateSerializer(data=data)
         if serializer.is_valid():
             new_ticket = serializer.save()
             return Response({'id': new_ticket.id, 'with_email': with_email})
