@@ -30,30 +30,10 @@ services:
       - ./openbao/policies:/openbao/policies
     environment:
       - BAO_API_ADDR=${OPENBAO_URL}
-      - BAO_LOCAL_CONFIG={"listener":[{"tcp":{"address":"0.0.0.0:8200","tls_disable":true}}],"storage":{"file":{"path":"/openbao/file"}}}
-    command: server
+    command: server -dev -dev-root-token-id=korazon123
     restart: unless-stopped
     networks:
         - default
-  openbao-init:
-    build:
-      context: ./openbao
-      dockerfile: Dockerfile.init
-    container_name: openbao-init
-    depends_on:
-      - openbao
-    user: "0:0"
-    volumes:
-      - ./openbao/data:/openbao/file
-      - ./openbao/logs:/openbao/logs
-      - ./openbao/policies:/openbao/policies
-    entrypoint: ["/openbao/init_openbao.sh"]
-    restart: "no"
-    environment:
-      - OPENBAO_URL=${OPENBAO_URL}
-      - BAO_TOKEN_FILE=${BAO_TOKEN_FILE}
-    networks:
-      - default
   core_service:
     command: >
       bash -c "python3 manage.py migrate && python manage.py setup_test_data && python3 manage.py runserver 0.0.0.0:5000"
@@ -77,8 +57,6 @@ services:
       - "5000:5000"
     depends_on:
       openbao:
-        condition: service_started
-      openbao-init:
         condition: service_started
       postgres:
         condition: service_healthy
