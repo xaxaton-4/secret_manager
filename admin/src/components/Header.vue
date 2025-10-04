@@ -8,6 +8,10 @@ const links = [
     to: '/secrets/new',
     label: 'Новый секрет',
   },
+  {
+    to: '/dashboard',
+    label: 'Дашборд',
+  },
 ];
 </script>
 

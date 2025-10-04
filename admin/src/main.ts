@@ -1,5 +1,7 @@
 import { createApp } from 'vue';
 import Aura from '@primeuix/themes/aura';
+import dayjs from 'dayjs';
+import 'dayjs/locale/ru';
 import { createPinia } from 'pinia';
 import 'primeicons/primeicons.css';
 import PrimeVue from 'primevue/config';
@@ -9,6 +11,8 @@ import Tooltip from 'primevue/tooltip';
 import App from './App.vue';
 import './assets/style.scss';
 import { router } from './core/router';
+
+dayjs.locale('ru');
 
 const app = createApp(App);
 
