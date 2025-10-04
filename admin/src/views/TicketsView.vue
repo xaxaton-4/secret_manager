@@ -1,16 +1,20 @@
 <script setup lang="ts">
-import { onMounted } from 'vue';
+import { computed, onMounted } from 'vue';
+import dayjs from 'dayjs';
+import { ProgressSpinner } from 'primevue';
 import Button from 'primevue/button';
 import Card from 'primevue/card';
 import { useConfirm } from 'primevue/useconfirm';
-import { useToast } from 'primevue/usetoast';
 import { useTicketsStore } from '@/store/tickets';
 
 const ticketsStore = useTicketsStore();
 const confirm = useConfirm();
-const toast = useToast();
 
-const onAccept = (event: PointerEvent) => {
+const tickets = computed(() => {
+  return ticketsStore.tickets.filter((ticket) => !ticket.is_approved);
+});
+
+const onAccept = (event: PointerEvent, ticketId: number) => {
   confirm.require({
     target: event.currentTarget as HTMLElement,
     message: 'Вы действительно хотите принять заявку?',
@@ -24,20 +28,7 @@ const onAccept = (event: PointerEvent) => {
       label: 'Да',
     },
     accept: () => {
-      toast.add({
-        severity: 'info',
-        summary: 'Confirmed',
-        detail: 'You have accepted',
-        life: 3000,
-      });
-    },
-    reject: () => {
-      toast.add({
-        severity: 'error',
-        summary: 'Rejected',
-        detail: 'You have rejected',
-        life: 3000,
-      });
+      ticketsStore.approveTicket(ticketId);
     },
   });
 };
@@ -56,20 +47,7 @@ const onReject = (event: PointerEvent) => {
       label: 'Да',
     },
     accept: () => {
-      toast.add({
-        severity: 'info',
-        summary: 'Confirmed',
-        detail: 'You have accepted',
-        life: 3000,
-      });
-    },
-    reject: () => {
-      toast.add({
-        severity: 'error',
-        summary: 'Rejected',
-        detail: 'You have rejected',
-        life: 3000,
-      });
+      // TODO remove ticket
     },
   });
 };
@@ -85,29 +63,36 @@ onMounted(() => {
       <template #title>Заявки</template>
     </Card>
 
-    <Card>
-      <template #title>Заявка от ...</template>
-      <template #content>
-        <p>Ресурс: ...</p>
-        <p>Обоснование: ...</p>
-        <p>Срок доступа: ...</p>
-      </template>
+    <ProgressSpinner v-if="ticketsStore.isLoading" />
 
-      <template #footer>
-        <Button
-          label="Принять"
-          icon="pi pi-check"
-          :class="$style.accept"
-          @click="onAccept($event)"
-        />
-        <Button
-          label="Отклонить"
-          icon="pi pi-times"
-          severity="danger"
-          @click="onReject"
-        />
-      </template>
-    </Card>
+    <template v-else>
+      <Card
+        v-for="ticket in tickets"
+        :key="ticket.id"
+      >
+        <template #title>Заявка от {{ ticket.user.email }}</template>
+        <template #content>
+          <p>Ресурс: {{ ticket.resource }}</p>
+          <p>Обоснование: {{ ticket.reason }}</p>
+          <p>Срок доступа: {{ dayjs(ticket.period).format('DD.MM.YYYY') }}</p>
+        </template>
+
+        <template #footer>
+          <Button
+            label="Принять"
+            icon="pi pi-check"
+            :class="$style.accept"
+            @click="onAccept($event, ticket.id)"
+          />
+          <Button
+            label="Отклонить"
+            icon="pi pi-times"
+            severity="danger"
+            @click="onReject"
+          />
+        </template>
+      </Card>
+    </template>
   </div>
 </template>
 
