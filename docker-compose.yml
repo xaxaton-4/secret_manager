@@ -97,6 +97,17 @@ services:
       - "5001:5001"
     networks:
       - default
+  admin:
+    build:
+      context: ./admin
+      dockerfile: Dockerfile
+    container_name: admin
+    ports:
+      - "80:80"
+    depends_on:
+      - core_service
+    networks:
+      - default
   keycloak:
     image: quay.io/keycloak/keycloak:21.1
     environment:
