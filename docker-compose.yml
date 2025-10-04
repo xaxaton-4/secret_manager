@@ -1,5 +1,3 @@
-version: "3.8"
-
 services:
   postgres:
       image: postgres:15
@@ -22,15 +20,32 @@ services:
       - "8200:8200"
       - "8201:8201"
     volumes:
-      - ./config:/openbao/config
-      - ./data:/openbao/file
-      - ./logs:/openbao/logs
+      - ./openbao/data:/openbao/file
+      - ./openbao/logs:/openbao/logs
     environment:
+      - BAO_API_ADDR=http://openbao:8200
       - BAO_LOCAL_CONFIG={"listener":[{"tcp":{"address":"0.0.0.0:8200","tls_disable":true}}],"storage":{"file":{"path":"/openbao/file"}}}
     command: server
     restart: unless-stopped
     networks:
         - default
+  openbao-init:
+    build:
+      context: ./openbao
+      dockerfile: Dockerfile.init
+    container_name: openbao-init
+    depends_on:
+      - openbao
+    volumes:
+      - ./openbao/data:/openbao/file
+      - ./openbao/logs:/openbao/logs
+    entrypoint: ["/openbao/init_openbao.sh"]
+    restart: "no"
+    environment:
+      - OPENBAO_URL=http://openbao:8200
+      - BAO_FILE=/openbao/file/.bao_token
+    networks:
+      - default
   backend:
     build: ./backend
     container_name: backend
@@ -39,7 +54,7 @@ services:
       - OPENBAO_URL=http://openbao:8200
       - BAO_TOKEN_FILE=/openbao/file/.bao_token
     volumes:
-      - ./data:/openbao/file
+      - ./openbao/data:/openbao/file
     ports:
       - "5000:5000"
     networks:

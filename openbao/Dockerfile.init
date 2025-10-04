@@ -1,0 +1,8 @@
+FROM alpine:3.18
+
+# Устанавливаем curl и jq
+RUN apk add --no-cache curl jq bash
+
+# Копируем скрипт и делаем его исполняемым
+COPY init_openbao.sh /openbao/init_openbao.sh
+RUN chmod +x /openbao/init_openbao.sh
