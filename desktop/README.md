@@ -25,3 +25,17 @@ npm run electron-build
 ```
 npm run electron-start
 ```
+
+Данные для авторизации:
+
+- user@mail.ru
+
+- 12345
+
+По умолчанию есть секреты:
+
+- test_resource1
+
+- test_resource2
+
+- test_resource3
