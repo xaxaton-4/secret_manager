@@ -31,12 +31,12 @@ const resolver = ref(
   ),
 );
 
-const onFormSubmit = (event: FormSubmitEvent) => {
+const onFormSubmit = async (event: FormSubmitEvent) => {
   if (event.valid) {
     const values = event.values as FormValues;
     secretsStore.createSecret({
       resource: values.resource,
-      value: encryptAES(values.value, values.encryptionKey),
+      value: await encryptAES(values.value, values.encryptionKey),
     });
   }
 };

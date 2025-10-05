@@ -16,7 +16,13 @@ const isVisible = ref(false);
 
 const tooltip = computed(() => (isVisible.value ? 'Скрыть' : 'Показать'));
 
-const decrypted = computed(() => decryptAES(props.value, props.encryptionKey));
+const decrypted = ref('');
+
+watch([() => props.value, () => props.encryptionKey], async ([value, encryptionKey]) => {
+  decrypted.value = await decryptAES(value, encryptionKey);
+});
+
+// const decrypted = computed(async () => await decryptAES(props.value, props.encryptionKey));
 
 const onCopy = () => {
   navigator.clipboard.writeText(decrypted.value).then(() => {

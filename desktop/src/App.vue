@@ -53,7 +53,7 @@ const onCreateTicket = async (values: {
     toast.add({
       severity: 'error',
       summary: 'Ошибка',
-      detail: 'Не удалось создать заявку',
+      detail: 'Секрет не найден',
       life: 3000,
     });
   } finally {
