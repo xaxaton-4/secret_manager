@@ -2,7 +2,7 @@ from rest_framework.response import Response
 
 from secrets_api.base_api import BaseApiView
 from openbao.client import get_client
-from users.decorators import with_authorization
+from users.decorators import with_authorization, only_admin
 
 
 class SecretDetail(BaseApiView):
@@ -31,6 +31,7 @@ class SecretList(BaseApiView):
 
 
 class SecretCreate(BaseApiView):
+    @only_admin
     def post(self, request):
         openbao_client = get_client()
         try:
