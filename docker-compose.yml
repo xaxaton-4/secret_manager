@@ -63,11 +63,11 @@ services:
         condition: service_healthy
     networks:
       - default
-  notify_service:
+  notify:
     command: >
       bash -c "python3 run.py"
     build: ./backend/notify_service
-    container_name: notify_service
+    container_name: notify
     depends_on:
       - core
     environment:

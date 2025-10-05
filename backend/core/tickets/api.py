@@ -2,11 +2,11 @@ from django.core.paginator import Paginator
 from rest_framework import status as status_code
 from rest_framework.response import Response
 
-from secrets_api.base_api import BaseApiView, EmailSenderMixin
+from secrets_api.base_api import BaseApiView, EmailSenderMixin, NotificationsMixin
 from tickets.models import Ticket
 from tickets.serializers import TicketSerializer, TicketCreateSerializer
 from users.decorators import with_authorization, only_admin
-from openbao.client import get_client
+from openbao.client import get_client, OpenbaoClientError
 
 
 """
@@ -20,7 +20,7 @@ from openbao.client import get_client
 @apiSuccess (Ответ) {Number} id Идентификатор созданного тикета.
 @apiSuccess (Ответ) {Boolean} with_email Было отправлено сообщение на почту.
 """
-class CreateTicket(BaseApiView, EmailSenderMixin):
+class CreateTicket(BaseApiView, EmailSenderMixin, NotificationsMixin):
     @with_authorization
     def post(self, request):
         data = request.data
@@ -28,19 +28,14 @@ class CreateTicket(BaseApiView, EmailSenderMixin):
         serializer = TicketCreateSerializer(data=data)
         if serializer.is_valid():
             new_ticket = serializer.save()
-            email = request.user.email
             with_email = False
-            if email:
-                message = (
-                    f'Ключ "{request.data["resource"]}" запрашивается до '
-                    f'{request.data["period"]} в целях: "{request.data["reason"]}" '
-                    f'пользователем {request.user.email}'
-                )
-                try:
-                    self.send_email('Заявка на получение доступа', 'ticket.html', email, message)
-                    with_email = True
-                except Exception:
-                    with_email = False
+            message = (
+                f'Ключ "{request.data["resource"]}" запрашивается до '
+                f'{request.data["period"]} в целях: "{request.data["reason"]}" '
+                f'пользователем {request.user.email}'
+            )
+            self.send_email_to_admins('Заявка на получение доступа', 'ticket.html', message)
+            self.send_notif_to_admins('Поступила новая заявка на получение доступа!')
             return Response({'id': new_ticket.id, 'with_email': with_email})
         return Response(serializer.errors, status=status_code.HTTP_400_BAD_REQUEST)
 
@@ -53,7 +48,7 @@ class CreateTicket(BaseApiView, EmailSenderMixin):
 @apiBody {String} reason Причина отклонения тикета.
 @apiBody {Boolean} force По умолчанию False. Если сообщение не было доставлено пользователю ни на почту, ни уведомлением, то тикет всё равно будет удален (при True).
 """
-class DeleteTicket(BaseApiView, EmailSenderMixin):
+class DeleteTicket(BaseApiView, EmailSenderMixin, NotificationsMixin):
     @only_admin
     def post(self, request):
         ticket_id = request.data.get('ticket_id')
@@ -75,8 +70,7 @@ class DeleteTicket(BaseApiView, EmailSenderMixin):
             except Exception:
                 with_email = False
 
-        # send notif
-        notif_sended = True
+        notif_sended = self.send_notif(t.user.pk, f'Заявка на ключ "{t.resource}" отклонена. Причина: {reason}')
         if notif_sended or with_email or force:
             t.delete()
             return Response(status=200)
@@ -96,7 +90,7 @@ class DeleteTicket(BaseApiView, EmailSenderMixin):
 
 @apiSuccess (Ответ) {Number} id Идентификатор созданного тикета.
 """
-class ModifyTicket(BaseApiView, EmailSenderMixin):
+class ModifyTicket(BaseApiView, EmailSenderMixin, NotificationsMixin):
     @only_admin
     def post(self, request):
         ticket_id = request.data.get('ticket_id')
@@ -119,8 +113,12 @@ class ModifyTicket(BaseApiView, EmailSenderMixin):
             except Exception:
                 with_email = False
         t.save(update_fields=['is_approved'])
+        self.send_notif(t.user.pk, f'Ключ "{t.resource}" выдан!')
         openbao = get_client()
-        openbao.share_to_user(t.user.pk, t.resource)
+        try:
+            openbao.share_to_user(t.user.pk, t.resource)
+        except OpenbaoClientError:
+            return Response(status=status_code.HTTP_400_BAD_REQUEST)
         return Response({'id': t.pk, 'with_email': with_email})
 
 

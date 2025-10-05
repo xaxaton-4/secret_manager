@@ -12,6 +12,8 @@ ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '*').split(',')
 OPENBAO_URL = os.environ.get('OPENBAO_URL')
 OPENBAO_TOKEN = os.environ.get('OPENBAO_TOKEN')
 
+NOTIFY_SERVICE_URL = os.environ.get('NOTIFY_SERVICE_URL', 'http://notify:5001/').rstrip('/')
+
 INSTALLED_APPS = [
     'corsheaders',
     'django.contrib.admin',
