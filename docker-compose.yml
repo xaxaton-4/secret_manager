@@ -82,6 +82,7 @@ services:
       dockerfile: Dockerfile
       args:
         VITE_API_URL: ${VITE_API_URL}
+        VITE_WEB_SOCKET_URL: ${VITE_WEB_SOCKET_URL}
     container_name: admin
     ports:
       - "80:80"
@@ -89,6 +90,7 @@ services:
       - core
     environment:
       - VITE_API_URL=${VITE_API_URL}
+      - VITE_WEB_SOCKET_URL=${VITE_WEB_SOCKET_URL}
     networks:
       - default
   keycloak:
