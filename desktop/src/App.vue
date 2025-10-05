@@ -2,13 +2,14 @@
 import { ref, onMounted } from 'vue';
 import { watch } from 'vue';
 import dayjs from 'dayjs';
-import { Card, Toast, useConfirm, useToast } from 'primevue';
+import { Card, ProgressSpinner, Toast, useConfirm, useToast } from 'primevue';
 import ConfirmDialog from 'primevue/confirmdialog';
 import { createTicket } from './api/tickets';
 import Auth from './components/Auth.vue';
 import Container from './components/Container.vue';
-import EncryptionKeyDialog from './components/EncryptionKeyDialog.vue';
+import EncryptionKeyForm from './components/EncryptionKeyForm.vue';
 import NewTicket from './components/NewTicket.vue';
+import NotLoadedSecret from './components/NotLoadedSecret.vue';
 import Search from './components/Search.vue';
 import Secret from './components/Secret.vue';
 import { useSocket } from './composables/socket';
@@ -25,7 +26,6 @@ const encryptionKey = ref('');
 const lastResource = ref('');
 const isTicketLoading = ref(false);
 const isNewTicketVisible = ref(false);
-const isEncryptionKeyDialogVisible = ref(false);
 
 const onNewTicketBack = () => {
   isNewTicketVisible.value = false;
@@ -62,10 +62,8 @@ const onCreateTicket = async (values: {
   }
 };
 
-const onSearch = (resource: string) => {
-  secretsStore.currentSecret = null;
-
-  const secret = secretsStore.secrets[resource];
+const onSearch = async (resource: string) => {
+  const secret = secretsStore.secretsList.includes(resource);
   if (!secret) {
     confirm.require({
       message: 'Хотите создать заявку на доступ?',
@@ -87,23 +85,11 @@ const onSearch = (resource: string) => {
     return;
   }
 
-  secretsStore.currentSecret = {
-    resource,
-    value: secret,
-  };
-
-  toast.add({
-    severity: 'success',
-    summary: 'Секрет успешно найден',
-    life: 3000,
-  });
-
-  isEncryptionKeyDialogVisible.value = true;
+  await secretsStore.getSecret(resource);
 };
 
 const onEnterKey = (key: string) => {
   encryptionKey.value = key;
-  isEncryptionKeyDialogVisible.value = false;
 };
 
 onMounted(() => {
@@ -113,6 +99,7 @@ onMounted(() => {
 watch([() => authStore.isAuth, () => authStore.isReady], (isAuth, isReady) => {
   if (isAuth && isReady) {
     initSocket();
+    secretsStore.getSecrets();
   }
 });
 </script>
@@ -143,23 +130,38 @@ watch([() => authStore.isAuth, () => authStore.isReady], (isAuth, isReady) => {
         @back="onNewTicketBack"
       />
 
-      <Search
-        v-else
-        @search="onSearch"
-      />
+      <template v-else>
+        <Search @search="onSearch" />
 
-      <Secret
+        <EncryptionKeyForm @submit="onEnterKey" />
+      </template>
+
+      <ProgressSpinner v-if="secretsStore.isLoading" />
+
+      <template
+        v-else
+        v-for="resource in secretsStore.secretsList"
+        :key="resource"
+      >
+        <Secret
+          v-if="secretsStore.secretsVisible[resource]"
+          :resource="resource"
+          :value="secretsStore.secrets[resource]"
+          :encryption-key="encryptionKey"
+        />
+
+        <NotLoadedSecret
+          v-else
+          :resource="resource"
+        />
+      </template>
+
+      <!-- <Secret
         v-if="secretsStore.currentSecret && encryptionKey"
         :resource="secretsStore.currentSecret.resource"
         :value="secretsStore.currentSecret.value"
         :encryption-key="encryptionKey"
-      />
-
-      <EncryptionKeyDialog
-        v-model:is-visible="isEncryptionKeyDialogVisible"
-        @submit="onEnterKey"
-        @close="isEncryptionKeyDialogVisible = false"
-      />
+      /> -->
     </template>
 
     <Auth v-else />
