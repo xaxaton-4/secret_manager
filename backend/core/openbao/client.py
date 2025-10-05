@@ -126,6 +126,8 @@ class OpenbaoClient:
 
     def share_to_user(self, user_id: int, resource: str, mount_point: str = 'secret'):
         secret = self.read_secret(f'private/{resource}')
+        if not secret:
+            raise OpenbaoClientError
         value = secret['data'].get('data', {'v': None})
         self.write_secret(f'{user_id}/{resource}', data=value, mount_point=mount_point)
 

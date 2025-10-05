@@ -35,8 +35,8 @@ const onFormSubmit = (event: FormSubmitEvent) => {
   if (event.valid) {
     const values = event.values as FormValues;
     secretsStore.createSecret({
-      resource: encryptAES(values.resource, values.encryptionKey),
-      value: values.value,
+      resource: values.resource,
+      value: encryptAES(values.value, values.encryptionKey),
     });
   }
 };

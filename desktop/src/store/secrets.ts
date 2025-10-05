@@ -1,44 +1,58 @@
 import { defineStore } from 'pinia';
-import { getSecret } from '@/api/secrets';
+import { getSecret, getSecrets } from '@/api/secrets';
 import { toast } from '@/main';
 import { SecretsState } from '@/types/secrets';
 
 export const useSecretsStore = defineStore('secrets', {
   state: (): SecretsState => ({
     secrets: {},
-    currentSecret: null,
+    secretsList: [],
+    secretsVisible: {},
+    secretsLoading: {},
     isLoading: false,
   }),
   persist: {
-    pick: ['secrets'],
+    pick: ['secrets', 'secretsList'],
   },
   actions: {
-    async getSecret(resource: string) {
+    async getSecrets() {
       this.isLoading = true;
-      this.currentSecret = null;
+      try {
+        this.secretsList = await getSecrets();
+      } catch (error) {
+        toast.add({
+          severity: 'error',
+          summary: 'Ошибка',
+          detail: 'Не удалось найти секреты',
+          life: 3000,
+        });
+      } finally {
+        this.isLoading = false;
+      }
+    },
+    async getSecret(resource: string) {
+      this.secretsLoading[resource] = true;
       try {
         const localSecret = this.secrets[resource];
         if (localSecret) {
-          this.currentSecret = {
-            resource,
-            value: localSecret,
-          };
           toast.add({
             severity: 'success',
             summary: 'Найден локальный секрет',
             life: 3000,
           });
           getSecret(resource).then((secret) => {
-            this.currentSecret = secret;
+            this.secrets[resource] = secret.value;
           });
         } else {
-          this.currentSecret = await getSecret(resource);
+          const secret = await getSecret(resource);
+          this.secrets[resource] = secret.value;
           toast.add({
             severity: 'success',
             summary: 'Найден секрет на сервере',
             life: 3000,
           });
         }
+        this.secretsVisible[resource] = true;
       } catch (error) {
         toast.add({
           severity: 'error',
@@ -47,7 +61,7 @@ export const useSecretsStore = defineStore('secrets', {
           life: 3000,
         });
       } finally {
-        this.isLoading = false;
+        this.secretsLoading[resource] = true;
       }
     },
   },

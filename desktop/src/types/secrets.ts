@@ -1,6 +1,8 @@
 export interface SecretsState {
   secrets: Record<string, string>;
-  currentSecret: Secret | null;
+  secretsList: string[];
+  secretsVisible: Record<string, boolean>;
+  secretsLoading: Record<string, boolean>;
   isLoading: boolean;
 }
 
