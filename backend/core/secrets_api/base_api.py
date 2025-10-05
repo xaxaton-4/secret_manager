@@ -42,7 +42,7 @@ class NotificationsMixin:
     def send_notif(self, user_id: int, message: str):
         data = {'command': 'notify', 'message': message}
         try:
-            requests.post(f'{settings.NOTIFY_SERVICE_URL}/notify/send?account_id={user_id}', data=data)
+            requests.post(f'{settings.NOTIFY_SERVICE_URL}/notify/send?account_id={user_id}', json=data)
             return True
         except Exception:
             return False

@@ -14,12 +14,10 @@ docker compose up --build
 
 Инструкция по запуске десктоп приложения в desktop/README.md
 
+Админ панель открывается в браузере по адресу http://localhost/
 
-открыть админку:
+Данные для авторизации:
 
-localhost
+- admin@mail.ru
 
-авторизоваться
-
-admin@mail.ru
-12345
+- 12345
