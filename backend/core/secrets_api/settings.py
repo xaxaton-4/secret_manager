@@ -90,6 +90,35 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'core_format': {
+            'format': u'%(asctime)s %(levelname)s %(module)s:%(lineno)d %(funcName)s[%(process)d.%(threadName)s] %(message)s',
+            'datefmt': u'%a %b %d %H:%M:%S%z %Y'
+        }
+    },
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+            'formatter': 'core_format',
+        },
+        'file': {
+            'level': 'INFO',
+            'class': 'logging.FileHandler',
+            'filename': 'log/api.log',
+            'formatter': 'core_format',
+        }
+    },
+    'loggers': {
+        'core': {
+            'handlers': ['console', 'file'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+    },
+}
 
 LANGUAGE_CODE = 'en-us'
 
