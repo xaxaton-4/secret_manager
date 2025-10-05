@@ -48,7 +48,7 @@ class Command(BaseCommand):
                 random_days = random.randint(1, 30)
                 random_resource = random.randint(1, 3)
                 period = datetime.datetime.now() + datetime.timedelta(days=random_days)
-                Ticket.objects.create(resource=f'private/test_resource{random_resource}', reason=f'reason-{i}', user=user, period=period)
+                Ticket.objects.create(resource=f'test_resource{random_resource}', reason=f'reason-{i}', user=user, period=period)
         return need_count
 
     def create_secrets(self):
