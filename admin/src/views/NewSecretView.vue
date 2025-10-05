@@ -5,13 +5,20 @@ import { zodResolver } from '@primevue/forms/resolvers/zod';
 import { Button, Card, InputText, Message } from 'primevue';
 import { z } from 'zod';
 import { useSecretsStore } from '@/store/secrets';
-import { Secret } from '@/types/secrets';
+import { encryptAES } from '@/utils/crypt';
+
+interface FormValues {
+  resource: string;
+  value: string;
+  encryptionKey: string;
+}
 
 const secretsStore = useSecretsStore();
 
-const initialValues = reactive({
+const initialValues = reactive<FormValues>({
   resource: '',
   value: '',
+  encryptionKey: '',
 });
 
 const resolver = ref(
@@ -19,13 +26,18 @@ const resolver = ref(
     z.object({
       resource: z.string().min(1, { message: 'Введите ресурс' }),
       value: z.string().min(1, { message: 'Введите значение' }),
+      encryptionKey: z.string().min(1, { message: 'Введите ключ шифрования' }),
     }),
   ),
 );
 
 const onFormSubmit = (event: FormSubmitEvent) => {
   if (event.valid) {
-    secretsStore.createSecret(event.values as Secret);
+    const values = event.values as FormValues;
+    secretsStore.createSecret({
+      resource: encryptAES(values.resource, values.encryptionKey),
+      value: values.value,
+    });
   }
 };
 </script>
@@ -74,6 +86,23 @@ const onFormSubmit = (event: FormSubmitEvent) => {
             variant="simple"
           >
             {{ $form.value.error?.message }}
+          </Message>
+        </div>
+
+        <div class="flex flex-col gap-1">
+          <InputText
+            name="encryptionKey"
+            type="text"
+            placeholder="Ключ шифрования"
+            fluid
+          />
+          <Message
+            v-if="$form.encryptionKey?.invalid"
+            severity="error"
+            size="small"
+            variant="simple"
+          >
+            {{ $form.encryptionKey.error?.message }}
           </Message>
         </div>
 

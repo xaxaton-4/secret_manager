@@ -28,11 +28,14 @@ export const useSecretsStore = defineStore('secrets', {
             summary: 'Найден локальный секрет',
             life: 3000,
           });
+          getSecret(resource).then((secret) => {
+            this.currentSecret = secret;
+          });
         } else {
           this.currentSecret = await getSecret(resource);
           toast.add({
             severity: 'success',
-            summary: 'Найден локальный секрет',
+            summary: 'Найден секрет на сервере',
             life: 3000,
           });
         }

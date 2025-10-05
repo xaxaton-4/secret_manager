@@ -67,6 +67,7 @@ export const useAuthStore = defineStore('auth', {
         summary: 'Вы успешно вышли',
         life: 3000,
       });
+      localStorage.clear();
     },
   },
 });
