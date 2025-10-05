@@ -3,6 +3,10 @@
 ```
 cp .env.template .env
 ```
+или для win:
+```
+copy .env.template .env
+```
 
 Установить зависимости
 
