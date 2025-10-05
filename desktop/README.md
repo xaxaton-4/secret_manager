@@ -13,7 +13,7 @@ npm i -f
 Для сборки выполнить команду (этап packaging может быть долгим)
 
 ```
-npm run build
+npm run electron-build
 ```
 
 В папке dist-installer открыть файл установщик
