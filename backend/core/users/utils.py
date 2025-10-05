@@ -9,7 +9,7 @@ from rest_framework import exceptions
 
 
 AUTHENTICATION_HEADER_PREFIX = 'Bearer'
-logger = logging.getLogger(__name__)
+logger = logging.getLogger('core')
 
 
 def get_user_by_token(auth_header_value: str) -> 'User|None':

@@ -1,3 +1,5 @@
+import logging
+
 from django.core.paginator import Paginator
 from django.contrib.auth.models import Group
 from rest_framework import status as status_code
@@ -8,6 +10,9 @@ from tickets.models import Ticket
 from tickets.serializers import TicketSerializer, TicketCreateSerializer
 from users.decorators import with_authorization, only_admin
 from openbao.client import get_client, OpenbaoClientError
+
+
+logger = logging.getLogger('core')
 
 
 """
@@ -32,6 +37,7 @@ class CreateTicket(BaseApiView, EmailSenderMixin, NotificationsMixin):
             if not openbao_client.read_secret(f'private/{request.data["resource"]}'):
                 ib_group = Group.objects.filter(name='Отдел ИБ')
                 if ib_group.exists():
+                    logger.info('new message for IB-group about ticket')
                     ib_group = ib_group.first()
                     self.send_to_group(
                         f'Пользователь {request.user.email} пытался получить несуществующий ключ: "{request.data["resource"]}"',
@@ -40,6 +46,7 @@ class CreateTicket(BaseApiView, EmailSenderMixin, NotificationsMixin):
                 return Response(status=status_code.HTTP_404_NOT_FOUND)
 
             new_ticket = serializer.save()
+            logger.info(f'new ticket created by {request.user.email} for resource {data["resource"]}')
             with_email = False
             message = (
                 f'Ключ "{request.data["resource"]}" запрашивается до '
@@ -85,6 +92,7 @@ class DeleteTicket(BaseApiView, EmailSenderMixin, NotificationsMixin):
         notif_sended = self.send_notif(t.user.pk, f'Заявка на ключ "{t.resource}" отклонена. Причина: {reason}')
         if notif_sended or with_email or force:
             t.delete()
+            logger.info(f'access denied for {t.user.email}, {t.resource} by {request.user.email}')
             return Response(status=200)
         return Response(
             'Could not send feedback, if you still want to delete this ticket use "force" parameter',
@@ -129,7 +137,9 @@ class ModifyTicket(BaseApiView, EmailSenderMixin, NotificationsMixin):
         openbao = get_client()
         try:
             openbao.share_to_user(t.user.pk, t.resource)
+            logger.info(f'access approved for {t.user.email}, {t.resource} by {request.user.email}')
         except OpenbaoClientError:
+            logger.exception('can not give access to user')
             return Response(status=status_code.HTTP_400_BAD_REQUEST)
         return Response({'id': t.pk, 'with_email': with_email})
 

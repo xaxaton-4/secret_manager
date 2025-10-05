@@ -1,4 +1,5 @@
 import requests
+import logging
 
 from rest_framework.views import APIView
 from django.core.mail import EmailMessage
@@ -7,9 +8,11 @@ from django.contrib.auth.models import User, Group
 from django.template.loader import render_to_string
 
 
+logger = logging.getLogger('core')
+
 class BaseApiView(APIView):
     def dispatch(self, request, *args, **kwargs):
-        # logging here?
+        logger.info(f'new request: {request}')
         return super().dispatch(request, *args, **kwargs)
 
 
