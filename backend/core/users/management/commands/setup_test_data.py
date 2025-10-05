@@ -5,6 +5,7 @@ from django.core.management.base import BaseCommand
 from django.contrib.auth.models import User
 
 from tickets.models import Ticket
+from openbao.client import get_client
 
 
 class Command(BaseCommand):
@@ -24,6 +25,9 @@ class Command(BaseCommand):
 
         tickets_created = self.create_some_tickets(user)
         self.stdout.write(self.style.SUCCESS(f'{tickets_created} tickets was created'))
+
+        self.create_secrets()
+        self.stdout.write('Private secrets created successully.')
         self.stdout.write(self.style.SUCCESS('Finish setup_test_data command'))
 
     def create_user(self, email: str, password: str):
@@ -42,6 +46,13 @@ class Command(BaseCommand):
         if need_count > 0:
             for i in range(need_count):
                 random_days = random.randint(1, 30)
+                random_resource = random.randint(1, 3)
                 period = datetime.datetime.now() + datetime.timedelta(days=random_days)
-                Ticket.objects.create(resource=f'resource-{i}', reason=f'reason-{i}', user=user, period=period)
+                Ticket.objects.create(resource=f'private/test_resource{random_resource}', reason=f'reason-{i}', user=user, period=period)
         return need_count
+
+    def create_secrets(self):
+        openbao = get_client()
+        openbao.write_secret('private/test_resource1', data={'v': 'test-secret-value'})
+        openbao.write_secret('private/test_resource2', data={'v': 'realsecret'})
+        openbao.write_secret('private/test_resource3', data={'v': 'secret-value'})
