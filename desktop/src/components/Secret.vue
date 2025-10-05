@@ -2,10 +2,12 @@
 import { ref, computed, watch } from 'vue';
 import { debounce } from 'lodash-es';
 import { Card, Button, Skeleton, useToast } from 'primevue';
+import { decryptAES } from '@/utils/crypt';
 
 const props = defineProps<{
   resource: string;
   value: string;
+  encryptionKey: string;
 }>();
 
 const toast = useToast();
@@ -14,8 +16,10 @@ const isVisible = ref(false);
 
 const tooltip = computed(() => (isVisible.value ? 'Скрыть' : 'Показать'));
 
+const decrypted = computed(() => decryptAES(props.value, props.encryptionKey));
+
 const onCopy = () => {
-  navigator.clipboard.writeText(props.value).then(() => {
+  navigator.clipboard.writeText(decrypted.value).then(() => {
     toast.add({
       severity: 'success',
       summary: 'Секрет скопирован в буфер обмена',
@@ -48,26 +52,30 @@ watch(isVisible, () => {
 
     <template #content>
       <div :class="$style.content">
-        <Button
-          v-tooltip.top="tooltip"
-          :icon="`pi pi-${isVisible ? 'eye-slash' : 'eye'}`"
-          :aria-label="tooltip"
-          severity="secondary"
-          @click="isVisible = !isVisible"
-        />
-
-        <p :class="$style.text">
-          {{ value }}
-
-          <Skeleton v-if="!isVisible" />
-
-          <i
-            :class="$style.copy"
-            class="pi pi-copy"
-            v-tooltip.top="'Скопировать'"
-            @click="onCopy"
+        <template v-if="decrypted">
+          <Button
+            v-tooltip.top="tooltip"
+            :icon="`pi pi-${isVisible ? 'eye-slash' : 'eye'}`"
+            :aria-label="tooltip"
+            severity="secondary"
+            @click="isVisible = !isVisible"
           />
-        </p>
+
+          <p :class="$style.text">
+            {{ decrypted }}
+
+            <Skeleton v-if="!isVisible" />
+
+            <i
+              :class="$style.copy"
+              class="pi pi-copy"
+              v-tooltip.top="'Скопировать'"
+              @click="onCopy"
+            />
+          </p>
+        </template>
+
+        <template v-else>Неверный ключ шифрования</template>
       </div>
     </template>
   </Card>

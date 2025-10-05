@@ -6,20 +6,24 @@ import ConfirmDialog from 'primevue/confirmdialog';
 import { createTicket } from './api/tickets';
 import Auth from './components/Auth.vue';
 import Container from './components/Container.vue';
+import EncryptionKeyDialog from './components/EncryptionKeyDialog.vue';
 import NewTicket from './components/NewTicket.vue';
 import Search from './components/Search.vue';
 import Secret from './components/Secret.vue';
 import { useAuthStore } from './store/auth';
 import { useSecretsStore } from './store/secrets';
+import { decryptAES, encryptAES } from './utils/crypt';
 
 const authStore = useAuthStore();
 const secretsStore = useSecretsStore();
 const toast = useToast();
 const confirm = useConfirm();
 
+const encryptionKey = ref('');
 const lastResource = ref('');
 const isTicketLoading = ref(false);
 const isNewTicketVisible = ref(false);
+const isEncryptionKeyDialogVisible = ref(false);
 
 const onNewTicketBack = () => {
   isNewTicketVisible.value = false;
@@ -91,6 +95,13 @@ const onSearch = (resource: string) => {
     summary: 'Секрет успешно найден',
     life: 3000,
   });
+
+  isEncryptionKeyDialogVisible.value = true;
+};
+
+const onEnterKey = (key: string) => {
+  encryptionKey.value = key;
+  isEncryptionKeyDialogVisible.value = false;
 };
 
 onMounted(() => {
@@ -131,7 +142,15 @@ onMounted(() => {
 
       <Secret
         v-if="secretsStore.currentSecret"
-        v-bind="secretsStore.currentSecret"
+        :resource="secretsStore.currentSecret.resource"
+        :value="secretsStore.currentSecret.value"
+        :encryption-key="encryptionKey"
+      />
+
+      <EncryptionKeyDialog
+        v-model:is-visible="isEncryptionKeyDialogVisible"
+        @submit="onEnterKey"
+        @close="isEncryptionKeyDialogVisible = false"
       />
     </template>
 
