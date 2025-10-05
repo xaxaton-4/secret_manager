@@ -12,7 +12,7 @@ PORT = int(os.environ.get('NOTIFICATIONS_PORT', 5001))
 UVICORN_WORKERS = os.environ.get('NOTIFICATIONS_UVICORN_WORKERS', 2)
 DEBUG = load_bool('NOTIFICATIONS_DEBUG')
 
-CORE_URL = os.environ.get('CORE_URL', 'http://0.0.0.0:5000').rstrip('/')
+CORE_URL = os.environ.get('CORE_URL', 'http://core:5000').rstrip('/')
 
 
 log_level = os.environ.get('LOG_LEVEL', 'INFO')
