@@ -6,6 +6,7 @@ from secrets_api.base_api import BaseApiView, EmailSenderMixin
 from tickets.models import Ticket
 from tickets.serializers import TicketSerializer, TicketCreateSerializer
 from users.decorators import with_authorization, only_admin
+from openbao.client import get_client
 
 
 """
@@ -118,6 +119,8 @@ class ModifyTicket(BaseApiView, EmailSenderMixin):
             except Exception:
                 with_email = False
         t.save(update_fields=['is_approved'])
+        openbao = get_client()
+        openbao.share_to_user(t.user.pk, t.resource)
         return Response({'id': t.pk, 'with_email': with_email})
 
 

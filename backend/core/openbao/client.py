@@ -89,7 +89,6 @@ class OpenbaoClient:
         except Exception as e:
             raise OpenbaoClientError(f"Write secret failed: {str(e)}")
 
-
     def update_secret(self, path: str, data: dict, mount_point: str = "secret"):
         """Обновление секрета (синоним write)"""
         return self.write_secret(path, data, mount_point)
@@ -124,6 +123,11 @@ class OpenbaoClient:
             if e.response.status_code == 404:
                 return {"keys": []}
             raise OpenbaoClientError(f"List secrets failed: {str(e)}")
+
+    def share_to_user(self, user_id: int, resource: str, mount_point: str = 'secret'):
+        secret = self.read_secret(f'private/{resource}')
+        value = secret['data'].get('data', {'v': None})
+        self.write_secret(f'{user_id}/{resource}', data=value, mount_point=mount_point)
 
     def read_secret_metadata(self, path: str, mount_point: str = "secret"):
         """Чтение метаданных секрета"""

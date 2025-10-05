@@ -1,18 +1,12 @@
 from rest_framework.views import APIView
 from django.core.mail import EmailMessage
 from django.template.loader import render_to_string
-from rest_framework.response import Response
 
 
 class BaseApiView(APIView):
     def dispatch(self, request, *args, **kwargs):
         # logging here?
         return super().dispatch(request, *args, **kwargs)
-    def success(self, data, status=200):
-        return Response({"status": "success", "data": data}, status=status)
-
-    def error(self, message, status=400):
-        return Response({"status": "error", "message": message}, status=status)
 
 
 class EmailSenderMixin:
