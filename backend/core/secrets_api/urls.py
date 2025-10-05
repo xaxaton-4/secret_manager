@@ -8,6 +8,7 @@ urlpatterns = [
     path('docs/', include('docs.urls')),
     path('api/', include('tickets.urls')),
     path('api/', include('users.urls')),
+    path('api/', include('openbao.urls')),
 ]
 
 urlpatterns += staticfiles_urlpatterns()

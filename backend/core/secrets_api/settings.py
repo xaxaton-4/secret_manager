@@ -9,6 +9,8 @@ SECRET_KEY = os.environ.get('SECRET_KEY', 'no-so-secret')
 DEBUG = os.environ.get('DEBUG', 'false').lower() in {'true', '1', 'y'}
 ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '*').split(',')
 
+OPENBAO_URL = os.environ.get('OPENBAO_URL')
+OPENBAO_TOKEN = os.environ.get('OPENBAO_TOKEN')
 
 INSTALLED_APPS = [
     'corsheaders',

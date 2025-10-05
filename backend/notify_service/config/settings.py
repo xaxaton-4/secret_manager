@@ -12,8 +12,8 @@ PORT = int(os.environ.get('NOTIFICATIONS_PORT', 5001))
 UVICORN_WORKERS = os.environ.get('NOTIFICATIONS_UVICORN_WORKERS', 2)
 DEBUG = load_bool('NOTIFICATIONS_DEBUG')
 
-OPENBAO_BASE_URL = os.environ.get('OPENBAO_URL', 'http://127.0.0.1:8200')
-OPENBAO_TOKEN = 'korazon123'
+CORE_URL = os.environ.get('CORE_URL', 'http://0.0.0.0:5000').rstrip('/')
+
 
 log_level = os.environ.get('LOG_LEVEL', 'INFO')
 if log_level == 'INFO':
@@ -52,17 +52,17 @@ LOG_CONFIG = {
             'maxBytes': 16777216,
             'filename': 'log/access.log',
         },
-        'secret_manager': {
+        'notify_service': {
             'level': 'DEBUG',
             'formatter': 'base_format',
             'class': 'logging.handlers.RotatingFileHandler',
             'maxBytes': 16777216,
-            'filename': 'log/secret_manager.log',
+            'filename': 'log/notify_service.log',
         },
     },
     'loggers': {
         'uvicorn': {
-            'handlers': ['secret_manager', 'uvicorn_error_handler'],
+            'handlers': ['notify_service', 'uvicorn_error_handler'],
             'level': LOG_LEVEL,
             'propagate': False,
         },
@@ -71,7 +71,10 @@ LOG_CONFIG = {
             'level': LOG_LEVEL,
             'propagate': False,
         },
-        'secret_manager': {'handlers': ['secret_manager'], 'level': LOG_LEVEL},
+        'notify_service': {
+            'handlers': ['notify_service'],
+            'level': LOG_LEVEL
+        },
     },
 }
 

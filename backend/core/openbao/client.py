@@ -9,8 +9,8 @@ class OpenbaoClientError(Exception):
 
 class OpenbaoClient:
     def __init__(self):
-        self.base_url = settings.OPENBAO_BASE_URL
-        self.token = settings.OPENBAO_TOKEN
+        self.base_url = settings.OPENBAO_URL
+        self.token = 'korazon123'
 
     # ----------------- СИСТЕМНЫЕ МЕТОДЫ -----------------
     def check_health(self):
@@ -79,7 +79,7 @@ class OpenbaoClient:
         headers = {"X-Vault-Token": self.token}
         payload = {"data": data}
         try:
-            response = requests.post(url, headers=headers, json=payload)
+            response = requests.post(url, headers=headers, data=payload)
             response.raise_for_status()
             return response.json()
         except Exception as e:
@@ -312,7 +312,6 @@ class OpenbaoClient:
     def get_token(self):
         """Получение текущего токена"""
         return self.token
-
 
 
 def get_client():
