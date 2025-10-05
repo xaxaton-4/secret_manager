@@ -30,7 +30,7 @@ services:
       - ./openbao/policies:/openbao/policies
     environment:
       - BAO_API_ADDR=${OPENBAO_URL}
-    command: server -dev -dev-root-token-id=korazon123
+    command: server -dev -dev-root-token-id=${OPENBAO_TOKEN}
     restart: unless-stopped
     networks:
         - default
@@ -47,6 +47,7 @@ services:
       - DATABASE_HOST=${DATABASE_HOST}
       - DATABASE_PORT=${DATABASE_PORT}
       - OPENBAO_URL=${OPENBAO_URL}
+      - OPENBAO_TOKEN=${ROOT_TOKEN}
       - BAO_TOKEN_FILE=${BAO_TOKEN_FILE}
       - EMAIL_SENDER=${EMAIL_SENDER}
       - EMAIL_PASSWORD=${EMAIL_PASSWORD}

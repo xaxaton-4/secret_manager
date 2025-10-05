@@ -13,7 +13,7 @@ UVICORN_WORKERS = os.environ.get('NOTIFICATIONS_UVICORN_WORKERS', 2)
 DEBUG = load_bool('NOTIFICATIONS_DEBUG')
 
 OPENBAO_BASE_URL = os.environ.get('OPENBAO_URL', 'http://127.0.0.1:8200')
-
+OPENBAO_TOKEN = 'korazon123'
 
 log_level = os.environ.get('LOG_LEVEL', 'INFO')
 if log_level == 'INFO':
