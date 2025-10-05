@@ -12,7 +12,6 @@ import Search from './components/Search.vue';
 import Secret from './components/Secret.vue';
 import { useAuthStore } from './store/auth';
 import { useSecretsStore } from './store/secrets';
-import { decryptAES, encryptAES } from './utils/crypt';
 
 const authStore = useAuthStore();
 const secretsStore = useSecretsStore();
@@ -141,7 +140,7 @@ onMounted(() => {
       />
 
       <Secret
-        v-if="secretsStore.currentSecret"
+        v-if="secretsStore.currentSecret && encryptionKey"
         :resource="secretsStore.currentSecret.resource"
         :value="secretsStore.currentSecret.value"
         :encryption-key="encryptionKey"
