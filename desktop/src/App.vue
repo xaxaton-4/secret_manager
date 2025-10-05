@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
+import { watch } from 'vue';
 import dayjs from 'dayjs';
 import { Card, Toast, useConfirm, useToast } from 'primevue';
 import ConfirmDialog from 'primevue/confirmdialog';
@@ -10,6 +11,7 @@ import EncryptionKeyDialog from './components/EncryptionKeyDialog.vue';
 import NewTicket from './components/NewTicket.vue';
 import Search from './components/Search.vue';
 import Secret from './components/Secret.vue';
+import { useSocket } from './composables/socket';
 import { useAuthStore } from './store/auth';
 import { useSecretsStore } from './store/secrets';
 
@@ -17,6 +19,7 @@ const authStore = useAuthStore();
 const secretsStore = useSecretsStore();
 const toast = useToast();
 const confirm = useConfirm();
+const { initSocket } = useSocket();
 
 const encryptionKey = ref('');
 const lastResource = ref('');
@@ -105,6 +108,12 @@ const onEnterKey = (key: string) => {
 
 onMounted(() => {
   authStore.auth();
+});
+
+watch([() => authStore.isAuth, () => authStore.isReady], (isAuth, isReady) => {
+  if (isAuth && isReady) {
+    initSocket();
+  }
 });
 </script>
 
