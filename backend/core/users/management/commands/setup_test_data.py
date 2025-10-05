@@ -2,7 +2,7 @@ import datetime
 import random
 
 from django.core.management.base import BaseCommand
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, Group
 
 from tickets.models import Ticket
 from openbao.client import get_client
@@ -23,11 +23,12 @@ class Command(BaseCommand):
         if not user_created:
             self.stdout.write(self.style.WARNING('User with this email already exists'))
 
-        tickets_created = self.create_some_tickets(user)
-        self.stdout.write(self.style.SUCCESS(f'{tickets_created} tickets was created'))
-
         self.create_secrets()
         self.stdout.write('Private secrets created successully.')
+
+        ib, _ = Group.objects.get_or_create(name='Отдел ИБ')
+        admin.groups.add(ib)
+
         self.stdout.write(self.style.SUCCESS('Finish setup_test_data command'))
 
     def create_user(self, email: str, password: str):
@@ -40,16 +41,6 @@ class Command(BaseCommand):
             user.set_password(password)
             user.save(update_fields=['password'])
         return user, created
-
-    def create_some_tickets(self, user):
-        need_count = 100 - Ticket.objects.filter(user=user).count()
-        if need_count > 0:
-            for i in range(need_count):
-                random_days = random.randint(1, 30)
-                random_resource = random.randint(1, 3)
-                period = datetime.datetime.now() + datetime.timedelta(days=random_days)
-                Ticket.objects.create(resource=f'test_resource{random_resource}', reason=f'reason-{i}', user=user, period=period)
-        return need_count
 
     def create_secrets(self):
         openbao = get_client()

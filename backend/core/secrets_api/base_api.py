@@ -3,7 +3,7 @@ import requests
 from rest_framework.views import APIView
 from django.core.mail import EmailMessage
 from django.conf import settings
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, Group
 from django.template.loader import render_to_string
 
 
@@ -33,6 +33,14 @@ class EmailSenderMixin:
 class NotificationsMixin:
     def send_notif_to_admins(self, message: str):
         for user in User.objects.filter(is_superuser=True):
+            try:
+                self.send_notif(user.pk, message)
+            except Exception:
+                # put log here
+                pass
+
+    def send_to_group(self, message: str, group: Group):
+        for user in group.user_set.all():
             try:
                 self.send_notif(user.pk, message)
             except Exception:

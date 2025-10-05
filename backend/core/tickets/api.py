@@ -1,4 +1,5 @@
 from django.core.paginator import Paginator
+from django.contrib.auth.models import Group
 from rest_framework import status as status_code
 from rest_framework.response import Response
 
@@ -27,6 +28,17 @@ class CreateTicket(BaseApiView, EmailSenderMixin, NotificationsMixin):
         data.update(user=request.user.pk)
         serializer = TicketCreateSerializer(data=data)
         if serializer.is_valid():
+            openbao_client = get_client()
+            if not openbao_client.read_secret(f'private/{request.data["resource"]}'):
+                ib_group = Group.objects.filter(name='Отдел ИБ')
+                if ib_group.exists():
+                    ib_group = ib_group.first()
+                    self.send_to_group(
+                        f'Пользователь {request.user.email} пытался получить несуществующий ключ: "{request.data["resource"]}"',
+                        ib_group
+                    )
+                return Response(status=status_code.HTTP_404_NOT_FOUND)
+
             new_ticket = serializer.save()
             with_email = False
             message = (
