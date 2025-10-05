@@ -72,18 +72,23 @@ class OpenbaoClient:
             raise OpenbaoClientError(f"Read secret failed: {str(e)}")
 
     def write_secret(self, path: str, data: dict, mount_point: str = "secret"):
-        """Запись секрета"""
+        """Запись секрета в OpenBao (KV v2)"""
         if not self.token:
             raise OpenbaoClientError("Token required for write operation")
+
         url = self.get_url(f'v1/{mount_point}/data/{path}')
-        headers = {"X-Vault-Token": self.token}
+        headers = {
+            "X-Vault-Token": self.token
+        }
         payload = {"data": data}
+
         try:
-            response = requests.post(url, headers=headers, data=payload)
+            response = requests.post(url, headers=headers, json=payload)
             response.raise_for_status()
             return response.json()
         except Exception as e:
             raise OpenbaoClientError(f"Write secret failed: {str(e)}")
+
 
     def update_secret(self, path: str, data: dict, mount_point: str = "secret"):
         """Обновление секрета (синоним write)"""

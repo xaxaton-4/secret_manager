@@ -9,6 +9,11 @@ class SecretDetail(BaseApiView):
 
 
 class SecretCreate(BaseApiView):
-    def get(self, request):
+    def post(self, request):
         openbao_client = get_client()
-        openbao_client.write_secret('/test', {'1': True})
+        try:
+            payload = request.data
+            result = openbao_client.write_secret('test', payload)
+            return self.success(result)
+        except Exception as e:
+            return self.error(str(e))
