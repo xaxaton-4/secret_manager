@@ -13,3 +13,13 @@ docker compose up --build
 ```
 
 Инструкция по запуске десктоп приложения в desktop/README.md
+
+
+открыть админку:
+
+localhost
+
+авторизоваться
+
+admin@mail.ru
+12345
