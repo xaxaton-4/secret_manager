@@ -4,10 +4,12 @@ import Form, { FormSubmitEvent } from '@primevue/forms/form';
 import { zodResolver } from '@primevue/forms/resolvers/zod';
 import { Button, Card, InputText, Message } from 'primevue';
 import { z } from 'zod';
+import { useKeycloak } from '@/composables/keycloak';
 import { useAuthStore } from '@/store/auth';
 import { AuthParams } from '@/types/auth';
 
 const authStore = useAuthStore();
+const { keycloak } = useKeycloak();
 
 const initialValues = reactive({
   email: '',
@@ -27,6 +29,11 @@ const onFormSubmit = (event: FormSubmitEvent) => {
   if (event.valid) {
     authStore.login(event.values as AuthParams);
   }
+};
+
+const onKeycloak = async () => {
+  await keycloak.init({ onLoad: 'login-required' });
+  await keycloak.login({ redirectUri: 'http://localhost' });
 };
 </script>
 
@@ -79,8 +86,13 @@ const onFormSubmit = (event: FormSubmitEvent) => {
 
         <Button
           type="submit"
-          severity="secondary"
           label="Войти"
+        />
+
+        <Button
+          label="Войти через Keycloak"
+          severity="secondary"
+          @click="onKeycloak"
         />
       </Form>
     </template>

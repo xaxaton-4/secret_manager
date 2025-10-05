@@ -17,6 +17,11 @@ const links = [
     label: 'Дашборд',
   },
 ];
+
+const onLogout = () => {
+  authStore.logout();
+  localStorage.clear();
+};
 </script>
 
 <template>
@@ -34,7 +39,7 @@ const links = [
       :class="$style.logout"
       class="pi pi-sign-out"
       v-tooltip="'Выйти'"
-      @click="authStore.logout"
+      @click="onLogout"
     />
   </header>
 </template>
