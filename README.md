@@ -1,10 +1,13 @@
 Установить переменные окружения
 
 linux
+
 ```
 cp template.env .env
 ```
+
 windows
+
 ```
 copy template.env .env
 ```
@@ -17,8 +20,6 @@ P.S: Значения почты можно запросить у нас, одн
 docker compose up --build
 ```
 
-Инструкция по запуске десктоп приложения в desktop/README.md
-
 Админ панель открывается в браузере по адресу http://localhost/
 
 Данные для авторизации:
@@ -26,3 +27,9 @@ docker compose up --build
 - admin@mail.ru
 
 - 12345
+
+# Инструкция по запуску десктоп приложения в desktop/README.md
+
+```
+cd desktop
+```

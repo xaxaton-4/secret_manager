@@ -1,12 +1,10 @@
 import { computed, ref, watch } from 'vue';
 import Keycloak from 'keycloak-js';
 
-// import { useAuthStore } from '@/store/auth';
-
 const keycloak = new Keycloak({
-  url: 'http://localhost:8081',
-  realm: 'master',
-  clientId: 'client-id',
+  url: import.meta.env.VITE_KEYCLOAK_URL,
+  realm: import.meta.env.VITE_KEYCLOAK_REALM,
+  clientId: import.meta.env.VITE_KEYCLOAK_CLIENT_ID,
 });
 
 const isAuthenticated = ref(false);

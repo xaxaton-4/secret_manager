@@ -83,6 +83,9 @@ services:
       args:
         VITE_API_URL: ${VITE_API_URL}
         VITE_WEB_SOCKET_URL: ${VITE_WEB_SOCKET_URL}
+        VITE_KEYCLOAK_URL: ${VITE_KEYCLOAK_URL}
+        VITE_KEYCLOAK_REALM: ${VITE_KEYCLOAK_REALM}
+        VITE_KEYCLOAK_CLIENT_ID: ${VITE_KEYCLOAK_CLIENT_ID}
     container_name: admin
     ports:
       - "80:80"
@@ -91,6 +94,9 @@ services:
     environment:
       - VITE_API_URL=${VITE_API_URL}
       - VITE_WEB_SOCKET_URL=${VITE_WEB_SOCKET_URL}
+      - VITE_KEYCLOAK_URL=${VITE_KEYCLOAK_URL}
+      - VITE_KEYCLOAK_REALM=${VITE_KEYCLOAK_REALM}
+      - VITE_KEYCLOAK_CLIENT_ID=${VITE_KEYCLOAK_CLIENT_ID}
     networks:
       - default
   keycloak:
